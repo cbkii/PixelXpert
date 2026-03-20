@@ -302,6 +302,14 @@
 			android:title="@string/notif_default_expansion_title"
 			app:iconSpaceReserved="false" />
 
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="slimSilentNotifications"
+			android:summaryOff="@string/general_off"
+			android:summaryOn="@string/general_on"
+			android:title="@string/slim_silent_notif_title"
+			app:iconSpaceReserved="false" />
+
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory

@@ -351,6 +351,7 @@
     <string name="notif_default_expansion_title">Notification default expansion</string>
     <string name="notif_always_expand">Always expand</string>
     <string name="notif_always_collapse">Always collapse</string>
+    <string name="slim_silent_notif_title">Slim collapsed silent notifications</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
     <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Milliseconds</string>
