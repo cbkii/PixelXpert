@@ -29,9 +29,18 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Check signing secrets
+        id: check_secrets
+        run: |
+          if [ -n "${{ secrets.SIGNING_KEY }}" ] && [ -n "${{ secrets.ALIAS }}" ] && [ -n "${{ secrets.KEY_STORE_PASSWORD }}" ] && [ -n "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo "have_signing=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "have_signing=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
-        if: ${{ secrets.SIGNING_KEY != '' && secrets.ALIAS != '' && secrets.KEY_STORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
+        if: ${{ steps.check_secrets.outputs.have_signing == 'true' }}
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/debug
@@ -47,28 +56,28 @@ jobs:
 
       - name: Upload signed APK file
         if: ${{ steps.sign_app.outcome == 'success' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: PixelXpert_Xposed_signed.apk
           path: ${{ steps.sign_app.outputs.signedReleaseFile }}
 
       - name: Upload unsigned APK file
         if: ${{ steps.sign_app.outcome != 'success' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: PixelXpert_Xposed_unsigned_debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/PixelXpert.apk
 
       - name: Upload signed Xposed Artifact to Actions
         if: ${{ steps.sign_app.outcome == 'success' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: PixelXpert_Xposed_signed.zip
           path: output
 
       - name: Upload unsigned Xposed Artifact to Actions
         if: ${{ steps.sign_app.outcome != 'success' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: PixelXpert_Xposed_unsigned_test.zip
           path: output
