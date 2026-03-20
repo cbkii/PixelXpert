@@ -1,6 +1,7 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
+import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
 import android.content.Context;
@@ -15,7 +16,6 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 @SuppressWarnings("RedundantThrows")
 @SystemUIModPack
 public class SlimSilentNotifications extends XposedModPack {
-
 	private static boolean slimSilentNotifications = false;
 
 	private int mHeightReduction;
@@ -42,29 +42,30 @@ public class SlimSilentNotifications extends XposedModPack {
 		ReflectedClass NotificationContentViewClass = ReflectedClass.of(
 				"com.android.systemui.statusbar.notification.row.NotificationContentView");
 
-		// Intercept the contracted-height assignment and reduce it for silent, collapsed rows.
-		// The hook fires every time the notification stack recalculates row heights, so it
-		// naturally re-applies on update and restores the full height when the toggle is off
-		// or when the row is no longer silent / collapsed.
 		NotificationContentViewClass
 				.before("setSmallHeight")
 				.run(param -> {
 					if (!slimSilentNotifications) return;
 					try {
-						View contentView = (View) param.thisObject;
-						Object row = contentView.getParent();
+						Object row = getObjectField(param.thisObject, "mContainingNotification");
+						if (row == null && param.thisObject instanceof View) {
+							row = ((View) param.thisObject).getParent();
+						}
 						if (row == null) return;
 
-						// Only target silent (low-priority) section rows
-						boolean isLowPriority = (Boolean) callMethod(row, "isLowPriority");
-						if (!isLowPriority) return;
+						boolean isMinimized = (Boolean) callMethod(row, "isMinimized");
+						if (!isMinimized) return;
 
-						// Leave expanded rows and heads-up rows unchanged
 						boolean isExpanded = (Boolean) callMethod(row, "isExpanded");
 						if (isExpanded) return;
 
 						boolean isHeadsUp = (Boolean) callMethod(row, "isHeadsUp");
 						if (isHeadsUp) return;
+
+						Object entry = callMethod(row, "getEntry");
+						if (entry == null) return;
+						boolean isAmbient = (Boolean) callMethod(entry, "isAmbient");
+						if (!isAmbient) return;
 
 						int originalHeight = (int) param.args[0];
 						param.args[0] = Math.max(originalHeight - mHeightReduction, mMinHeight);
