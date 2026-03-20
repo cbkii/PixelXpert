@@ -34,6 +34,7 @@ jobs:
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
         if: ${{ env.HAS_SIGNING_SECRETS == 'true' }}
+        continue-on-error: true
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/debug
